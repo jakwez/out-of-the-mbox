@@ -11,15 +11,15 @@ import {
   createMBOXIndex,
   type OnCreateIndexProgress,
 } from "./models/createMBOXIndex";
-// import styled from "@emotion/styled";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import {
   Backdrop,
   Button,
-  CircularProgress,
   LinearProgress,
   Paper,
+  TablePagination,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material/styles";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -64,6 +64,22 @@ function App() {
     setMBoxIndex(mboxIndex);
   };
 
+  const [page, setPage] = useState(2);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const isBusy = progress >= 0 && progress < 1;
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -85,36 +101,54 @@ function App() {
             <VisuallyHiddenInput
               type="file"
               onChange={onSelectMBOXClick}
-              multiple
+              multiple={false}
+              accept=".mbox"
             />
           </Button>
-          <Backdrop open={isBusy}>
-            <Box
-              sx={{
-                width: "30%",
-                minWidth: 300,
-                // minHeight: 200,
-                backgroundColor: "green",
-              }}
-            >
-              {/* <Paper sx={{ width: "30%" }}>Some text</Paper> */}
-              <DemoPaper square={true}>
-                <div style={{ paddingBottom: 5 }}>{numEmails} emails</div>
-                <LinearProgress
-                  sx={{
-                    "& .MuiLinearProgress-bar": {
-                      transition: "none",
-                    },
-                  }}
-                  variant="determinate"
-                  value={progress * 100}
-                />
-              </DemoPaper>
-            </Box>
-          </Backdrop>
         </Toolbar>
       </AppBar>
-      <BasicTable />
+
+      <Backdrop open={isBusy}>
+        <Box
+          sx={{
+            width: "30%",
+            minWidth: 300,
+            // minHeight: 200,
+            backgroundColor: "green",
+          }}
+        >
+          {/* <Paper sx={{ width: "30%" }}>Some text</Paper> */}
+          <DemoPaper square={true}>
+            <div style={{ paddingBottom: 5 }}>{numEmails} emails</div>
+            <LinearProgress
+              sx={{
+                "& .MuiLinearProgress-bar": {
+                  transition: "none",
+                },
+              }}
+              variant="determinate"
+              value={progress * 100}
+            />
+          </DemoPaper>
+        </Box>
+      </Backdrop>
+
+      <Box /*display="flex" flexDirection={"column"}*/>
+        <Box display="flex" flexDirection={"row"} justifyContent="center">
+          <TablePagination
+            component="div"
+            count={100}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPageOptions={isSmall ? [] : [10, 50, 100, 200]}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+        <BasicTable />
+      </Box>
     </Box>
   );
   // return (
