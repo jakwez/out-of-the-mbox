@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { MBOXFile } from "../models/MBoxFile";
 import PostalMime from "postal-mime";
 import type {
   Email,
@@ -11,6 +10,7 @@ import type {
   // AddressParserOptions,
   // RawEmail,
 } from "postal-mime";
+import { getEmailBlob } from "../models/getEmailBlob";
 
 export type ViewMBOXPageProps = {
   file: File;
@@ -26,11 +26,9 @@ export function MessageViewer({
 }: ViewMBOXPageProps) {
   const [email, setEmail] = useState<Email | null>(null);
   useEffect(() => {
-    PostalMime.parse(MBOXFile.getMessageBlob(file, index, messageIndex)).then(
-      (email) => {
-        setEmail(email);
-      }
-    );
+    PostalMime.parse(getEmailBlob(file, index, messageIndex)).then((email) => {
+      setEmail(email);
+    });
   }, [file, messageIndex, index]);
 
   return (

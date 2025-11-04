@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { type OnBuildIndexProgress, MBOXFile } from "../models/MBoxFile";
-import { createThrottledProgressCallback } from "../helpers/createThrottledProgressCallback";
+import { throttleOnProgress } from "../models/throttleOnProgress";
 import Button from "@mui/material/Button";
+import type { MBOXIndex } from "../models/MBOXIndex";
+import {
+  createMBOXIndex,
+  type OnCreateIndexProgress,
+} from "../models/createMBOXIndex";
 
 export type SelectMBOXPageProps = {
-  onIndexLoaded: (file: File, idx: Array<number>) => void;
+  onIndexLoaded: (file: File, mboxIndex: MBOXIndex) => void;
 };
 
 export function SelectMBOXPage({ onIndexLoaded }: SelectMBOXPageProps) {
@@ -21,7 +25,7 @@ export function SelectMBOXPage({ onIndexLoaded }: SelectMBOXPageProps) {
       return;
     }
 
-    const onProgress = createThrottledProgressCallback<OnBuildIndexProgress>(
+    const onProgress = throttleOnProgress<OnCreateIndexProgress>(
       (zeroToOneProgress: number, index: number) => {
         setLoadingProgress(zeroToOneProgress);
         setNumMessages(index + 1);
@@ -29,7 +33,7 @@ export function SelectMBOXPage({ onIndexLoaded }: SelectMBOXPageProps) {
       },
       20
     );
-    const idx = await MBOXFile.buildIndex(file, onProgress);
+    const idx = await createMBOXIndex(file, onProgress);
     onIndexLoaded(file, idx);
   };
   return (

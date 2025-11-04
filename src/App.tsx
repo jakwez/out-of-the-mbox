@@ -1,74 +1,156 @@
 import { useState } from "react";
-import "./App.css";
-import { SelectMBOXPage } from "./components/SelectMBOXPage";
-import { ViewMBOXPage } from "./components/ViewMBoxPage";
 import BasicTable from "./components/BasicTable";
-
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import EmailIcon from "@mui/icons-material/Email";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import FileOpenIcon from "@mui/icons-material/FileOpen";
+import { throttleOnProgress } from "./models/throttleOnProgress";
+import {
+  createMBOXIndex,
+  type OnCreateIndexProgress,
+} from "./models/createMBOXIndex";
+// import styled from "@emotion/styled";
+import {
+  Backdrop,
+  Button,
+  CircularProgress,
+  LinearProgress,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [mboxIndex, setMBoxIndex] = useState<Array<number>>([]);
-  const onIndexLoaded = (file: File, index: Array<number>) => {
+  const [progress, setProgress] = useState(-1);
+  const [numEmails, setNumEmails] = useState(0);
+
+  const onSelectMBOXClick = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const inputElement = event.target as HTMLInputElement;
+    if (!inputElement.files) {
+      return;
+    }
+    const file = inputElement.files[0]; // this is a File (subclass of Blob)
+    if (!file) {
+      return;
+    }
+
+    const onProgress = throttleOnProgress<OnCreateIndexProgress>(
+      (zeroToOneProgress: number, index: number) => {
+        setProgress(zeroToOneProgress);
+        setNumEmails(index + 1);
+        return new Promise((r) => setTimeout(r, 0));
+      },
+      20
+    );
+    const mboxIndex = await createMBOXIndex(file, onProgress);
     setFile(file);
-    setMBoxIndex(index);
+    setMBoxIndex(mboxIndex);
   };
+
+  const isBusy = progress >= 0 && progress < 1;
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          {/* <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          > */}
-          <EmailIcon
-            // size="large"
-            // edge="start"
-            // color="inherit"
-            // aria-label="menu"
-            sx={{ mr: 2 }}
-          />
-          {/* </IconButton> */}
+          <EmailIcon sx={{ mr: 2 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             MBOX
           </Typography>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
+          <Button
+            loading={isBusy}
+            loadingPosition="start"
+            component="label"
+            variant="contained"
+            tabIndex={-1}
+            startIcon={<FileOpenIcon />}
           >
-            <FileOpenIcon />
-          </IconButton>
-          {/* <Button color="inherit">Login</Button> */}
+            Open
+            <VisuallyHiddenInput
+              type="file"
+              onChange={onSelectMBOXClick}
+              multiple
+            />
+          </Button>
+          <Backdrop open={isBusy}>
+            <Box
+              sx={{
+                width: "30%",
+                minWidth: 300,
+                // minHeight: 200,
+                backgroundColor: "green",
+              }}
+            >
+              {/* <Paper sx={{ width: "30%" }}>Some text</Paper> */}
+              <DemoPaper square={true}>
+                <div style={{ paddingBottom: 5 }}>{numEmails} emails</div>
+                <LinearProgress
+                  sx={{
+                    "& .MuiLinearProgress-bar": {
+                      transition: "none",
+                    },
+                  }}
+                  variant="determinate"
+                  value={progress * 100}
+                />
+              </DemoPaper>
+            </Box>
+          </Backdrop>
         </Toolbar>
       </AppBar>
-      <BasicTable />;
+      <BasicTable />
     </Box>
   );
-  // return
-
-  return (
-    <>
-      {mboxIndex.length === 0 ? (
-        <SelectMBOXPage onIndexLoaded={onIndexLoaded} />
-      ) : (
-        <ViewMBOXPage file={file!} messageIndex={mboxIndex} />
-      )}
-    </>
-  );
+  // return (
+  //   <>
+  //     {mboxIndex.length === 0 ? (
+  //       <SelectMBOXPage onIndexLoaded={onIndexLoaded} />
+  //     ) : (
+  //       <ViewMBOXPage file={file!} messageIndex={mboxIndex} />
+  //     )}
+  //   </>
+  // );
 }
+const DemoPaper = styled(Paper)(({ theme }) => ({
+  // width: 120,
+  // height: 140,
+  // witdh: "30%",
+  // backgroundColor: "red",
+  padding: theme.spacing(2),
+  paddingTop: 20,
+  paddingBottom: 20,
+  ...theme.typography.body2,
+  textAlign: "center",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+}));
 
 export default App;
+
+// <Box
+//               sx={{ width: "30%", backgroundColor: "red" }}
+//               flexDirection="column"
+//             >
+//               {/* <CircularProgress color="inherit" /> */}
+//               <Typography variant="h5" component="div" justifyContent="center">
+//                 1249 emails
+//               </Typography>
+//               <LinearProgress variant="determinate" value={progress} />
+//             </Box>
