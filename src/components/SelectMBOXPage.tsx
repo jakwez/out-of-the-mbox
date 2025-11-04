@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { type OnBuildIndexProgress, MBOXFile } from "../models/MBoxFile";
 import { createThrottledProgressCallback } from "../helpers/createThrottledProgressCallback";
+import Button from "@mui/material/Button";
 
 export type SelectMBOXPageProps = {
   onIndexLoaded: (file: File, idx: Array<number>) => void;
@@ -33,6 +34,7 @@ export function SelectMBOXPage({ onIndexLoaded }: SelectMBOXPageProps) {
   };
   return (
     <>
+      <Button variant="contained">Hello world</Button>
       <input type="file" onChange={onFileSelected} accept=".mbox" />
       <div>
         {/* <label htmlFor="progressBar">Progress</label> */}
