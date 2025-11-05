@@ -125,9 +125,9 @@ function App() {
     await new Promise((r) => setTimeout(r, 0));
 
     const onProgress = throttleOnProgress<OnCreateIndexProgress>(
-      (zeroToOneProgress: number, index: number) => {
+      (zeroToOneProgress: number, numEmailsReadSoFar: number) => {
         setProgress(zeroToOneProgress);
-        setNumEmails(index + 1);
+        setNumEmails(numEmailsReadSoFar);
         return new Promise((r) => setTimeout(r, 0));
       },
       20
@@ -221,7 +221,7 @@ function App() {
           <Box display="flex" flexDirection={"row"} justifyContent="center">
             <TablePagination
               component="div"
-              count={mboxIndex.length + 1}
+              count={mboxIndex.length}
               page={page}
               onPageChange={handleChangePage}
               rowsPerPageOptions={isSmall ? [] : [10, 50, 100, 200]}

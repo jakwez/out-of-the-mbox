@@ -2,7 +2,7 @@ import type { MBOXIndex } from "./MBOXIndex";
 
 export type OnCreateIndexProgress = (
   zeroToOneProgress: number, // position in the file normalized to 0..1
-  emailIndex: number
+  numEmailsReadSoFar: number
 ) => void | Promise<void>;
 
 const separator = new TextEncoder().encode("\nFrom "); // pattern as bytes
@@ -15,23 +15,14 @@ export async function createMBOXIndex(
   // console.log("FILE SIZE", file.size);
   let matchingPosInPattern = 0; // in the separator, -1 for no match
   let matchingPosInFile = 0; //
-  let numEmails = 0;
   let position = 0;
   const reader = file.stream().getReader();
 
   let lineCount = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    //   console.log("Read done!");
-    if (done) {
-      const ret = onProgress(1, mboxIndex.length);
-      if (ret instanceof Promise) {
-        await ret;
-      }
-      break;
-    }
-    for (let i = 0; i < value.length; i++) {
-      const char = value[i];
+  let { done, value } = await reader.read();
+  while (!done) {
+    for (let i = 0; i < value!.length; i++) {
+      const char = value![i];
       if (char === 13) {
         // Carriage Return!
       }
@@ -46,8 +37,8 @@ export async function createMBOXIndex(
         }
         matchingPosInPattern++;
         if (matchingPosInPattern >= separator.length - 1) {
-          numEmails++;
           // console.log("GOT IT AT", matchingPosInFile, numMessages);
+          mboxIndex.push(matchingPosInFile);
           const ret = onProgress(
             matchingPosInFile / file.size,
             mboxIndex.length
@@ -55,7 +46,6 @@ export async function createMBOXIndex(
           if (ret instanceof Promise) {
             await ret;
           }
-          mboxIndex.push(matchingPosInFile);
           matchingPosInPattern = -1;
           matchingPosInFile = -1;
         }
@@ -73,6 +63,14 @@ export async function createMBOXIndex(
         matchingPosInFile = -1;
       }
     }
+    ({ done, value } = await reader.read());
+  }
+
+  // Indicate we're done with a last onProgress call. If there were emails,
+  // the last argument will be the same as for the last onProgress call
+  const ret = onProgress(1, mboxIndex.length);
+  if (ret instanceof Promise) {
+    await ret;
   }
   return mboxIndex;
 }
