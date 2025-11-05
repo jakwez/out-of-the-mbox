@@ -5,6 +5,9 @@ export function getEmailBlob(
   emailIndex: number,
   mboxIndex: MBOXIndex
 ): Blob {
+  if (emailIndex < 0 || emailIndex >= mboxIndex.length) {
+    throw new Error(`invalid emailIndex ${emailIndex}`);
+  }
   const startOffset = mboxIndex[emailIndex];
   const endOffset = mboxIndex[emailIndex + 1] ?? file.size;
   const blob = file.slice(startOffset, endOffset);
