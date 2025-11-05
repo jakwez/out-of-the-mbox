@@ -46,6 +46,13 @@ const VisuallyHiddenInput = styled("input")({
 // MBOX email index to actual Email record
 // type MBOXEmails = Record<number, Email>;
 
+const dateOptions: Intl.DateTimeFormatOptions = {
+  // weekday: "long",
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+};
+
 async function fetchEmailPage(
   mboxFile: File,
   mboxIndex: MBOXIndex,
@@ -70,8 +77,12 @@ function createListItem(email: Email, key: string) {
   const textPreview = email.text
     ? " - " + email.text.substring(0, 80 - name.length) + "..."
     : "";
+  // const date = new Date(email.date!).toLocaleDateString();
+  // const date = new Date(email.date!).toDateString();
+  const date = new Date(email.date!).toLocaleDateString(undefined, dateOptions);
+
   return (
-    <div key={key}>
+    <Fragment key={key}>
       <ListItem alignItems="flex-start">
         <ListItemAvatar>
           <Avatar alt={name} src="/static/images/avatar/1.jpg" />
@@ -91,9 +102,15 @@ function createListItem(email: Email, key: string) {
             </Fragment>
           }
         />
+        <ListItemText
+          secondary={date}
+          sx={{
+            textAlign: "right",
+          }}
+        ></ListItemText>
       </ListItem>
       <Divider variant="inset" component="li" />
-    </div>
+    </Fragment>
   );
 }
 
