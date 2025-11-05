@@ -121,6 +121,7 @@ function App() {
 
     setPage(0);
     setMBOXFile(file);
+    setMBoxIndex([]);
     setMBoxEmails([]);
     await new Promise((r) => setTimeout(r, 0));
 
