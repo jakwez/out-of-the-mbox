@@ -30,6 +30,7 @@ import type { Email } from "postal-mime";
 import { getEmailBlob } from "./models/getEmailBlob";
 import PostalMime from "postal-mime";
 import type { MBOXIndex } from "./models/MBOXIndex";
+import { EmailDialog } from "./components/EmailDialog";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -131,7 +132,11 @@ async function fetchEmailPage(
   return emails;
 }
 
-function createListItem(email: Email, key: string) {
+function createEmailItem(
+  email: Email,
+  id: number,
+  onListItemClick: (id: number) => void
+) {
   const name = email.from?.name ?? "Unknown sender";
   const textPreview = email.text
     ? " - " + email.text.substring(0, 80 - name.length) + "..."
@@ -141,8 +146,18 @@ function createListItem(email: Email, key: string) {
   const date = new Date(email.date!).toLocaleDateString(undefined, dateOptions);
 
   return (
-    <Fragment key={key}>
-      <ListItem alignItems="flex-start">
+    <Fragment key={id.toString()}>
+      <ListItem
+        alignItems="flex-start"
+        onClick={(event) => onListItemClick(id)}
+        sx={{
+          transition: "background-color 0.2s",
+          "&:hover": {
+            backgroundColor: "action.hover", // uses MUI theme value
+            cursor: "pointer",
+          },
+        }}
+      >
         <ListItemAvatar>
           <Avatar {...stringAvatar(name)} />
         </ListItemAvatar>
@@ -182,6 +197,7 @@ function App() {
   const [numEmails, setNumEmails] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [idForEmailDialog, setIdForEmailDialog] = useState(-1);
 
   const onSelectMBOXClick = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -238,6 +254,15 @@ function App() {
     const emails = await fetchEmailPage(mboxFile!, mboxIndex, 0, rowsPerPage);
     setMBoxEmails(emails);
   };
+
+  const onEmailItemClick = (id: number) => {
+    setIdForEmailDialog(id);
+  };
+
+  const onEmailDialogClose = () => {
+    setIdForEmailDialog(-1);
+  };
+
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const isBusy = progress >= 0 && progress < 1;
@@ -319,13 +344,21 @@ function App() {
             return createListItem(email);
           })} */}
             {mboxEmails.map((email, index) =>
-              createListItem(email, index.toString())
+              createEmailItem(email, index, onEmailItemClick)
             )}
           </List>
 
           {/* <AlignItemsList /> */}
           {/* <BasicTable /> */}
         </Box>
+      )}
+
+      {idForEmailDialog !== -1 && (
+        <EmailDialog
+          email={mboxEmails[idForEmailDialog]}
+          open={true}
+          onClose={onEmailDialogClose}
+        />
       )}
     </Box>
   );
