@@ -4,11 +4,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  FormControlLabel,
-  FormGroup,
-  Switch,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import RawOnSharpIcon from "@mui/icons-material/RawOnSharp";
+import HtmlSharpIcon from "@mui/icons-material/HtmlSharp";
+import JavascriptSharpIcon from "@mui/icons-material/JavascriptSharp";
+
 import DOMPurify from "dompurify";
 import type { Email } from "postal-mime";
 import { useState } from "react";
@@ -18,16 +21,20 @@ export interface EmailDialogProps {
   onClose: () => void;
 }
 
+type ContentViewMode = "raw_text" | "safe_html" | "full_html";
+
 export function EmailDialog(props: EmailDialogProps) {
-  const [viewHtml, setViewHtml] = useState(true);
-  const [purifyHtml, setPurifyHtml] = useState(true);
-  let html = purifyHtml
-    ? DOMPurify.sanitize(props.email.html!, {
-        FORBID_TAGS: ["iframe", "script", "link", "object", "embed"],
-        FORBID_ATTR: ["srcset", "xlink:href", "formaction"],
-        ALLOWED_URI_REGEXP: /^data:/, // only allow inline data URIs
-      })
-    : props.email.html!;
+  const [contentViewMode, setContentViewMode] =
+    useState<ContentViewMode>("safe_html");
+
+  const handleContentViewModeChange = (
+    event: React.MouseEvent,
+    value: ContentViewMode
+  ) => {
+    if (value !== null) {
+      setContentViewMode(value);
+    }
+  };
   return (
     <Dialog
       open={props.open}
@@ -38,39 +45,55 @@ export function EmailDialog(props: EmailDialogProps) {
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6">{props.email.subject!}</Typography>
-          <FormGroup sx={{ flexDirection: "row" }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  size={"small"}
-                  checked={viewHtml}
-                  onChange={(event) => setViewHtml(event.target.checked)}
-                />
-              }
-              label="View HTML"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  size={"small"}
-                  checked={purifyHtml}
-                  onChange={(event) => setPurifyHtml(event.target.checked)}
-                />
-              }
-              label="Clean HTML"
-            />
-          </FormGroup>
+          <ToggleButtonGroup
+            value={contentViewMode}
+            exclusive
+            onChange={handleContentViewModeChange}
+            aria-label="text alignment"
+          >
+            <ToggleButton value={"raw_text" satisfies ContentViewMode}>
+              <RawOnSharpIcon />
+            </ToggleButton>
+            <ToggleButton value={"safe_html" satisfies ContentViewMode}>
+              <HtmlSharpIcon />
+            </ToggleButton>
+            <ToggleButton value={"full_html" satisfies ContentViewMode}>
+              <JavascriptSharpIcon />
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ minHeight: 300 }}>
-        {viewHtml ? (
-          <div dangerouslySetInnerHTML={{ __html: html }} />
-        ) : (
+        {contentViewMode === "raw_text" && (
           <DialogContentText variant="caption">
-            {props.email.text!}
+            {props.email.text}
           </DialogContentText>
+        )}
+        {contentViewMode === "safe_html" && (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: props.email.html
+                ? sanitizeHtml(props.email.html)
+                : "No HTML content",
+            }}
+          />
+        )}
+        {contentViewMode === "full_html" && (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: props.email.html ?? "No HTML content",
+            }}
+          />
         )}
       </DialogContent>
     </Dialog>
   );
+}
+
+function sanitizeHtml(html: string) {
+  return DOMPurify.sanitize(html, {
+    FORBID_TAGS: ["iframe", "script", "link", "object", "embed"],
+    FORBID_ATTR: ["srcset", "xlink:href", "formaction"],
+    ALLOWED_URI_REGEXP: /^data:/, // only allow inline data URIs
+  });
 }

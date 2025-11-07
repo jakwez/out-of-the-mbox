@@ -39,7 +39,6 @@ const VisuallyHiddenInput = styled("input")({
 
 export function App() {
   const [mboxFile, setMBOXFile] = useState<File | null>(null);
-  // const [mboxEmailDict, setMBoxEmailDict] = useState<MBOXEmails>({});
   const [mboxEmails, setMBoxEmails] = useState<Array<Email>>([]);
   const [mboxIndex, setMBoxIndex] = useState<Array<number>>([]);
   const [progress, setProgress] = useState(-1);
