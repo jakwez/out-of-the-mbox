@@ -6,6 +6,7 @@
 - email view: full date, senders, receivers, etc... all headers
 - show headers in tooltip in list view
 - switch view mode to drop down: text, safe html, html
+- indicat no text or no html
 - remember settings globally
 - navigate to next/prev email/page with shortcut
 - section for attachments

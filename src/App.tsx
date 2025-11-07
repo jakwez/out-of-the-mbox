@@ -25,7 +25,7 @@ import { getEmailBlob } from "./models/getEmailBlob";
 import PostalMime from "postal-mime";
 import type { MBOXIndex } from "./models/MBOXIndex";
 import { EmailDialog } from "./components/EmailDialog";
-import { createEmailItem } from "./components/EmailListItem";
+import { EmailListItem } from "./components/EmailListItem";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -207,13 +207,13 @@ export function App() {
               /*maxWidth: 360,*/ bgcolor: "background.paper",
             }}
           >
-            {/* {Object.keys(mboxEmailDict).map((index) => {
-            const email = mboxEmailDict[parseInt(index)];
-            return createListItem(email);
-          })} */}
-            {mboxEmails.map((email, index) =>
-              createEmailItem(email, index, onEmailItemClick)
-            )}
+            {mboxEmails.map((email, index) => (
+              <EmailListItem
+                email={email}
+                emailIndex={index}
+                onEmailClick={onEmailItemClick}
+              />
+            ))}
           </List>
 
           {/* <AlignItemsList /> */}
