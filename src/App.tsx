@@ -73,7 +73,7 @@ export function App() {
   };
 
   const handleChangePage = async (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
     const emails = await fetchEmailPage(
@@ -181,6 +181,7 @@ export function App() {
             >
               {mboxEmails.map((email, index) => (
                 <EmailListItem
+                  key={index.toString()}
                   email={email}
                   emailIndex={index}
                   onEmailClick={onEmailItemClick}
