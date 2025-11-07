@@ -21,11 +21,9 @@ import {
 import { styled, useTheme } from "@mui/material/styles";
 import List from "@mui/material/List";
 import type { Email } from "postal-mime";
-import { getEmailBlob } from "./models/getEmailBlob";
-import PostalMime from "postal-mime";
-import type { MBOXIndex } from "./models/MBOXIndex";
 import { EmailDialog } from "./components/EmailDialog";
 import { EmailListItem } from "./components/EmailListItem";
+import { fetchEmailPage } from "./models/fetchEmailPage";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -38,25 +36,6 @@ const VisuallyHiddenInput = styled("input")({
   whiteSpace: "nowrap",
   width: 1,
 });
-
-async function fetchEmailPage(
-  mboxFile: File,
-  mboxIndex: MBOXIndex,
-  page: number,
-  rowsPerPage: number
-) {
-  const parsePromises = [];
-  for (let i = 0; i < rowsPerPage; i++) {
-    const emailIndex = rowsPerPage * page + i;
-    if (emailIndex < mboxIndex.length) {
-      parsePromises.push(
-        PostalMime.parse(getEmailBlob(mboxFile, emailIndex, mboxIndex))
-      );
-    }
-  }
-  const emails = await Promise.all(parsePromises);
-  return emails;
-}
 
 export function App() {
   const [mboxFile, setMBOXFile] = useState<File | null>(null);
