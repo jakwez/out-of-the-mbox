@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Divider,
   ListItem,
   ListItemAvatar,
@@ -8,6 +7,7 @@ import {
 } from "@mui/material";
 import type { Email } from "postal-mime";
 import { Fragment } from "react/jsx-runtime";
+import { InitialsAvatar } from "./InitialsAvatar";
 
 export interface EmailListItemProps {
   email: Email;
@@ -30,7 +30,7 @@ export function EmailListItem({
     <Fragment key={id.toString()}>
       <ListItem
         alignItems="flex-start"
-        onClick={(event) => onClick(id)}
+        onClick={(_event) => onClick(id)}
         sx={{
           transition: "background-color 0.2s",
           "&:hover": {
@@ -40,7 +40,7 @@ export function EmailListItem({
         }}
       >
         <ListItemAvatar>
-          <Avatar {...stringAvatar(name)} />
+          <InitialsAvatar name={name} />
         </ListItemAvatar>
         <ListItemText
           primary={email.subject ?? "(No subject)"}
@@ -75,47 +75,3 @@ const dateOptions: Intl.DateTimeFormatOptions = {
   month: "short",
   day: "numeric",
 };
-
-// From MUI documentation https://mui.com/material-ui/react-avatar/
-function stringToColor(string: string) {
-  let hash = 0;
-  let i;
-  /* eslint-disable no-bitwise */
-  for (i = 0; i < string.length; i += 1) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let color = "#";
-  for (i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-  /* eslint-enable no-bitwise */
-  return color;
-}
-
-function getInitials(name: string): string {
-  // Remove punctuation and extra whitespace
-  const clean = name.replace(/[^\p{L}\p{N}\s]/gu, "").trim();
-  // Split on spaces and filter out empty parts
-  const parts = clean.split(/\s+/).filter(Boolean);
-  // Take first character of each part and capitalize
-  return parts.map((p) => p[0].toUpperCase()).join("");
-}
-
-function stringAvatar(name: string) {
-  const allInitials = getInitials(name);
-  let twoInitials: string;
-  if (allInitials.length >= 2) {
-    twoInitials = allInitials[0] + allInitials[1];
-  } else if (allInitials.length == 1) {
-    twoInitials = allInitials[0];
-  } else {
-    twoInitials = "?";
-  }
-  return {
-    sx: {
-      bgcolor: stringToColor(name),
-    },
-    children: twoInitials,
-  };
-}

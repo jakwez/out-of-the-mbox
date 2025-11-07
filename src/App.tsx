@@ -5,7 +5,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import EmailIcon from "@mui/icons-material/Email";
 import FileOpenIcon from "@mui/icons-material/FileOpen";
-import { throttleOnProgress } from "./models/throttleOnProgress";
+import { throttleOnProgress } from "./util/throttleOnProgress";
 import {
   createMBOXIndex,
   type OnCreateIndexProgress,

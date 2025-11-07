@@ -69,7 +69,7 @@ export function EmailDialog(props: EmailDialogProps) {
       </DialogTitle>
       <DialogContent sx={{ minHeight: 300 }}>
         {contentViewMode === "raw_text" && (
-          <DialogContentText variant="caption">
+          <DialogContentText variant="body1">
             {props.email.text}
           </DialogContentText>
         )}
