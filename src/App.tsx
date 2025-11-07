@@ -24,20 +24,13 @@ import type { Email } from "postal-mime";
 import { EmailDialog } from "./components/EmailDialog";
 import { EmailListItem } from "./components/EmailListItem";
 import { fetchEmailPage } from "./models/fetchEmailPage";
-
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
+import { SettingsContext } from "./Settings";
+import type { Settings } from "./Settings";
 
 export function App() {
+  const [settings, setSettings] = useState<Settings>({
+    contentViewMode: "safe_html",
+  });
   const [mboxFile, setMBOXFile] = useState<File | null>(null);
   const [mboxEmails, setMBoxEmails] = useState<Array<Email>>([]);
   const [mboxIndex, setMBoxIndex] = useState<Array<number>>([]);
@@ -113,100 +106,102 @@ export function App() {
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
   const isBusy = progress >= 0 && progress < 1;
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <EmailIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            MBOX
-          </Typography>
-          <Button
-            loading={isBusy}
-            loadingPosition="start"
-            component="label"
-            variant="contained"
-            tabIndex={-1}
-            startIcon={<FileOpenIcon />}
-          >
-            Open
-            <VisuallyHiddenInput
-              type="file"
-              onChange={openMboxFile}
-              multiple={false}
-              accept=".mbox"
-            />
-          </Button>
-        </Toolbar>
-      </AppBar>
+    <SettingsContext.Provider value={{ settings, setSettings }}>
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Toolbar>
+            <EmailIcon sx={{ mr: 2 }} />
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              MBOX
+            </Typography>
+            <Button
+              loading={isBusy}
+              loadingPosition="start"
+              component="label"
+              variant="contained"
+              tabIndex={-1}
+              startIcon={<FileOpenIcon />}
+            >
+              Open
+              <VisuallyHiddenInput
+                type="file"
+                onChange={openMboxFile}
+                multiple={false}
+                accept=".mbox"
+              />
+            </Button>
+          </Toolbar>
+        </AppBar>
 
-      <Backdrop open={isBusy}>
-        <Box
-          sx={{
-            width: "30%",
-            minWidth: 300,
-            // minHeight: 200,
-            backgroundColor: "green",
-          }}
-        >
-          {/* <Paper sx={{ width: "30%" }}>Some text</Paper> */}
-          <DemoPaper square={true}>
-            <div style={{ paddingBottom: 5 }}>{numEmails} emails</div>
-            <LinearProgress
-              sx={{
-                "& .MuiLinearProgress-bar": {
-                  transition: "none",
-                },
-              }}
-              variant="determinate"
-              value={progress * 100}
-            />
-          </DemoPaper>
-        </Box>
-      </Backdrop>
-
-      {mboxIndex.length !== 0 && (
-        <Box /*display="flex" flexDirection={"column"}*/>
-          <Box display="flex" flexDirection={"row"} justifyContent="center">
-            <TablePagination
-              component="div"
-              count={mboxIndex.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPageOptions={isSmall ? [] : [10, 50, 100, 200]}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              showFirstButton
-              showLastButton
-            />
-          </Box>
-          <List
+        <Backdrop open={isBusy}>
+          <Box
             sx={{
-              width: "100%",
-              /*maxWidth: 360,*/ bgcolor: "background.paper",
+              width: "30%",
+              minWidth: 300,
+              // minHeight: 200,
+              backgroundColor: "green",
             }}
           >
-            {mboxEmails.map((email, index) => (
-              <EmailListItem
-                email={email}
-                emailIndex={index}
-                onEmailClick={onEmailItemClick}
+            {/* <Paper sx={{ width: "30%" }}>Some text</Paper> */}
+            <DemoPaper square={true}>
+              <div style={{ paddingBottom: 5 }}>{numEmails} emails</div>
+              <LinearProgress
+                sx={{
+                  "& .MuiLinearProgress-bar": {
+                    transition: "none",
+                  },
+                }}
+                variant="determinate"
+                value={progress * 100}
               />
-            ))}
-          </List>
+            </DemoPaper>
+          </Box>
+        </Backdrop>
 
-          {/* <AlignItemsList /> */}
-          {/* <BasicTable /> */}
-        </Box>
-      )}
+        {mboxIndex.length !== 0 && (
+          <Box /*display="flex" flexDirection={"column"}*/>
+            <Box display="flex" flexDirection={"row"} justifyContent="center">
+              <TablePagination
+                component="div"
+                count={mboxIndex.length}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPageOptions={isSmall ? [] : [10, 50, 100, 200]}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                showFirstButton
+                showLastButton
+              />
+            </Box>
+            <List
+              sx={{
+                width: "100%",
+                /*maxWidth: 360,*/ bgcolor: "background.paper",
+              }}
+            >
+              {mboxEmails.map((email, index) => (
+                <EmailListItem
+                  email={email}
+                  emailIndex={index}
+                  onEmailClick={onEmailItemClick}
+                />
+              ))}
+            </List>
 
-      {idForEmailDialog !== -1 && (
-        <EmailDialog
-          email={mboxEmails[idForEmailDialog]}
-          open={true}
-          onClose={onEmailDialogClose}
-        />
-      )}
-    </Box>
+            {/* <AlignItemsList /> */}
+            {/* <BasicTable /> */}
+          </Box>
+        )}
+
+        {idForEmailDialog !== -1 && (
+          <EmailDialog
+            email={mboxEmails[idForEmailDialog]}
+            open={true}
+            onClose={onEmailDialogClose}
+          />
+        )}
+      </Box>
+    </SettingsContext.Provider>
   );
 }
 const DemoPaper = styled(Paper)(({ theme }) => ({
@@ -219,3 +214,15 @@ const DemoPaper = styled(Paper)(({ theme }) => ({
   flexDirection: "column",
   justifyContent: "center",
 }));
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});

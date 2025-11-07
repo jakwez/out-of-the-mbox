@@ -2,12 +2,13 @@
 
 # To do
 
-- email view: full date, senders, receivers, etc... all headers
-- show headers in tooltip in list view
-- indicat no text or no html
 - remember settings globally
+- email view: full date, senders, receivers, etc... all headers
+- indicate no text or no html
+- no height jumps
 - navigate to next/prev email/page with shortcut
 - section for attachments
+- show headers in tooltip in list view
 - go to specific email/page # in navigation
 - postalmime.parse processing indicator (esp. for 200+)
 - look at dompurify options more closely

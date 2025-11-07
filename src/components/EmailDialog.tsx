@@ -14,27 +14,31 @@ import JavascriptSharpIcon from "@mui/icons-material/JavascriptSharp";
 
 import DOMPurify from "dompurify";
 import type { Email } from "postal-mime";
-import { useState } from "react";
+import { useContext } from "react";
+import { SettingsContext, type ContentViewMode } from "../Settings";
 export interface EmailDialogProps {
   email: Email;
   open: boolean;
   onClose: () => void;
 }
 
-type ContentViewMode = "raw_text" | "safe_html" | "full_html";
-
 export function EmailDialog(props: EmailDialogProps) {
-  const [contentViewMode, setContentViewMode] =
-    useState<ContentViewMode>("safe_html");
-
+  const settingsContext = useContext(SettingsContext);
+  if (!settingsContext) {
+    throw new Error(`no settings context provided`);
+  }
   const handleContentViewModeChange = (
     event: React.MouseEvent,
     value: ContentViewMode
   ) => {
     if (value !== null) {
-      setContentViewMode(value);
+      settingsContext.setSettings({
+        ...settingsContext.settings,
+        contentViewMode: value,
+      });
     }
   };
+  const contentViewMode = settingsContext.settings.contentViewMode;
   return (
     <Dialog
       open={props.open}
