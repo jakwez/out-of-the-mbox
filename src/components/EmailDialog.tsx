@@ -16,6 +16,7 @@ import DOMPurify from "dompurify";
 import type { Email } from "postal-mime";
 import { useContext } from "react";
 import { SettingsContext, type ContentViewMode } from "../Settings";
+import { InitialsAvatar } from "./InitialsAvatar";
 export interface EmailDialogProps {
   email: Email;
   open: boolean;
@@ -68,6 +69,7 @@ export function EmailDialog(props: EmailDialogProps) {
         </Box>
       </DialogTitle>
       <DialogContent sx={{ minHeight: 300 }}>
+        <InitialsAvatar name={props.email.from?.name} />
         {contentViewMode === "raw_text" && (
           <DialogContentText variant="body1">
             {props.email.text}

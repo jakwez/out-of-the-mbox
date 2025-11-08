@@ -40,7 +40,7 @@ export function EmailListItem({
         }}
       >
         <ListItemAvatar>
-          <InitialsAvatar name={name} />
+          <InitialsAvatar name={email.from?.name} />
         </ListItemAvatar>
         <ListItemText
           primary={email.subject ?? "(No subject)"}
