@@ -4,32 +4,45 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  type DialogProps,
 } from "@mui/material";
 import RawOnSharpIcon from "@mui/icons-material/RawOnSharp";
 import HtmlSharpIcon from "@mui/icons-material/HtmlSharp";
 import JavascriptSharpIcon from "@mui/icons-material/JavascriptSharp";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 import DOMPurify from "dompurify";
 import type { Email } from "postal-mime";
 import { useContext } from "react";
 import { SettingsContext, type ContentViewMode } from "../Settings";
 import { InitialsAvatar } from "./InitialsAvatar";
-export interface EmailDialogProps {
+
+export type EmailDialogProps = DialogProps & {
   email: Email;
   open: boolean;
   onClose: () => void;
-}
+  onPrevEmail: () => void;
+  onNextEmail: () => void;
+};
 
-export function EmailDialog(props: EmailDialogProps) {
+export function EmailDialog({
+  email,
+  open,
+  onClose,
+  onPrevEmail,
+  onNextEmail,
+}: EmailDialogProps) {
   const settingsContext = useContext(SettingsContext);
   if (!settingsContext) {
     throw new Error(`no settings context provided`);
   }
   const handleContentViewModeChange = (
-    event: React.MouseEvent,
+    _event: React.MouseEvent,
     value: ContentViewMode
   ) => {
     if (value !== null) {
@@ -42,18 +55,27 @@ export function EmailDialog(props: EmailDialogProps) {
   const contentViewMode = settingsContext.settings.contentViewMode;
   return (
     <Dialog
-      open={props.open}
-      onClose={props.onClose}
+      open={open}
+      onClose={onClose}
       fullWidth={true}
       maxWidth={"lg"}
+      sx={{
+        "& .MuiDialog-paper": {
+          height: "80vh",
+          maxHeight: "none",
+        },
+      }}
     >
       <DialogTitle>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6">{props.email.subject!}</Typography>
+        <Box display="flex" alignItems="center">
+          <Typography variant="h6" flexGrow="1">
+            {email.subject!}
+          </Typography>
           <ToggleButtonGroup
             value={contentViewMode}
             exclusive
             onChange={handleContentViewModeChange}
+            sx={{ marginRight: "20px" }}
             aria-label="text alignment"
           >
             <ToggleButton value={"raw_text" satisfies ContentViewMode}>
@@ -66,28 +88,31 @@ export function EmailDialog(props: EmailDialogProps) {
               <JavascriptSharpIcon />
             </ToggleButton>
           </ToggleButtonGroup>
+
+          <IconButton onClick={() => onPrevEmail()}>
+            <NavigateBeforeIcon />
+          </IconButton>
+          <IconButton onClick={() => onNextEmail()}>
+            <NavigateNextIcon />
+          </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ minHeight: 300 }}>
-        <InitialsAvatar name={props.email.from?.name} />
+        <InitialsAvatar name={email.from?.name} />
         {contentViewMode === "raw_text" && (
-          <DialogContentText variant="body1">
-            {props.email.text}
-          </DialogContentText>
+          <DialogContentText variant="body1">{email.text}</DialogContentText>
         )}
         {contentViewMode === "safe_html" && (
           <div
             dangerouslySetInnerHTML={{
-              __html: props.email.html
-                ? sanitizeHtml(props.email.html)
-                : "No HTML content",
+              __html: email.html ? sanitizeHtml(email.html) : "No HTML content",
             }}
           />
         )}
         {contentViewMode === "full_html" && (
           <div
             dangerouslySetInnerHTML={{
-              __html: props.email.html ?? "No HTML content",
+              __html: email.html ?? "No HTML content",
             }}
           />
         )}

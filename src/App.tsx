@@ -159,7 +159,7 @@ export function App() {
         </Backdrop>
 
         {mboxIndex.length !== 0 && (
-          <Box /*display="flex" flexDirection={"column"}*/>
+          <Box>
             <Box display="flex" flexDirection={"row"} justifyContent="center">
               <TablePagination
                 component="div"
@@ -188,9 +188,6 @@ export function App() {
                 />
               ))}
             </List>
-
-            {/* <AlignItemsList /> */}
-            {/* <BasicTable /> */}
           </Box>
         )}
 
@@ -199,6 +196,8 @@ export function App() {
             email={mboxEmails[idForEmailDialog]}
             open={true}
             onClose={onEmailDialogClose}
+            onPrevEmail={() => setIdForEmailDialog(idForEmailDialog - 1)}
+            onNextEmail={() => setIdForEmailDialog(idForEmailDialog + 1)}
           />
         )}
       </Box>
