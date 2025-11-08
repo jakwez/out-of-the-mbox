@@ -85,12 +85,19 @@ export function App() {
     setMBoxEmails(emails);
     setPage(newPage);
   };
+
   const handleChangeRowsPerPage = async (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    const newRowsPerPage = parseInt(event.target.value);
+    setRowsPerPage(newRowsPerPage);
     setPage(0);
-    const emails = await fetchEmailPage(mboxFile!, mboxIndex, 0, rowsPerPage);
+    const emails = await fetchEmailPage(
+      mboxFile!,
+      mboxIndex,
+      0,
+      newRowsPerPage
+    );
     setMBoxEmails(emails);
   };
 
