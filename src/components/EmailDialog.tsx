@@ -1,6 +1,8 @@
 import {
   Box,
+  Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
@@ -98,27 +100,88 @@ export function EmailDialog({
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent sx={{ minHeight: 300 }}>
-        <InitialsAvatar name={email.from?.name} />
-        {contentViewMode === "raw_text" && (
-          <DialogContentText variant="body1">{email.text}</DialogContentText>
-        )}
-        {contentViewMode === "safe_html" && (
-          <div
-            dangerouslySetInnerHTML={{
-              __html: email.html ? sanitizeHtml(email.html) : "No HTML content",
-            }}
-          />
-        )}
-        {contentViewMode === "full_html" && (
-          <div
-            dangerouslySetInnerHTML={{
-              __html: email.html ?? "No HTML content",
-            }}
-          />
-        )}
+      <DialogContent
+        sx={{
+          minHeight: 300,
+          // backgroundColor: "green",
+          display: "flex",
+          flexDirection: "column",
+          // alignItems: "flex-start",
+          justifyContent: "flex-start",
+        }}
+      >
+        {renderEmailHeaders(email)}
+        {renderEmailContent(email, contentViewMode)}
       </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
     </Dialog>
+  );
+}
+
+function renderEmailHeaders(email: Email) {
+  const fromName = email.from?.name ?? "<no name>";
+  const fromAddress = email.from?.address ?? "<no address>";
+  const toAddresses = email.to ?? [];
+
+  return (
+    <Box bgcolor={"pink"}>
+      <InitialsAvatar name={email.from?.name} />
+      <Typography>
+        fromName: {fromName} fromAddress:{fromAddress}
+      </Typography>
+      {toAddresses.map((toAddress, index) => (
+        <Typography>
+          toName:{toAddress.name} toAddress:{toAddress.address}
+        </Typography>
+      ))}
+    </Box>
+  );
+}
+
+function renderEmailContent(email: Email, contentViewMode: ContentViewMode) {
+  switch (contentViewMode) {
+    case "raw_text": {
+      if (!email.text) {
+        return renderCenteredMessage("No text content");
+      }
+      return (
+        <DialogContentText whiteSpace={"pre-line"}>
+          {email.text}
+        </DialogContentText>
+      );
+    }
+    case "safe_html":
+    case "full_html":
+      if (!email.html) {
+        return renderCenteredMessage("No HTML content");
+      }
+      const html =
+        contentViewMode === "safe_html" ? sanitizeHtml(email.html) : email.html;
+      return <div dangerouslySetInnerHTML={{ __html: html }} />;
+  }
+}
+
+// Relies on parent being flex container
+function renderCenteredMessage(message: string) {
+  return (
+    <Box
+      flexGrow={1}
+      // bgcolor={"pink"}
+      display={"flex"}
+      flexDirection={"column"}
+      justifyContent={"center"}
+    >
+      <Typography
+        align="center"
+        variant="h6"
+        color="textSecondary"
+        bgcolor={"white"}
+      >
+        {message}
+      </Typography>
+    </Box>
   );
 }
 
