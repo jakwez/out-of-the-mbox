@@ -75,7 +75,6 @@ export function EmailDialog({
             value={contentViewMode}
             exclusive
             onChange={handleContentViewModeChange}
-            sx={{ marginRight: "20px" }}
             aria-label="text alignment"
           >
             <ToggleButton value={"raw_text" satisfies ContentViewMode}>
@@ -88,6 +87,8 @@ export function EmailDialog({
               <JavascriptSharpIcon />
             </ToggleButton>
           </ToggleButtonGroup>
+
+          <Box sx={{ width: 16 }} />
 
           <IconButton onClick={() => onPrevEmail()}>
             <NavigateBeforeIcon />

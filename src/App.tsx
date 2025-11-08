@@ -196,8 +196,8 @@ export function App() {
             email={mboxEmails[idForEmailDialog]}
             open={true}
             onClose={onEmailDialogClose}
-            onPrevEmail={() => setIdForEmailDialog(idForEmailDialog - 1)}
-            onNextEmail={() => setIdForEmailDialog(idForEmailDialog + 1)}
+            onPrevEmail={() => setIdForEmailDialog(idForEmailDialog - 1)} // TO DO!
+            onNextEmail={() => setIdForEmailDialog(idForEmailDialog + 1)} // TO DO!
           />
         )}
       </Box>
