@@ -17,6 +17,7 @@ import HtmlSharpIcon from "@mui/icons-material/HtmlSharp";
 import JavascriptSharpIcon from "@mui/icons-material/JavascriptSharp";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import DOMPurify from "dompurify";
 import type { Email } from "postal-mime";
@@ -30,6 +31,7 @@ export type EmailDialogProps = DialogProps & {
   onClose: () => void;
   onPrevEmail: () => void;
   onNextEmail: () => void;
+  onGoToEmail: (index: number) => void;
 };
 
 export function EmailDialog({
@@ -38,6 +40,7 @@ export function EmailDialog({
   onClose,
   onPrevEmail,
   onNextEmail,
+  onGoToEmail,
 }: EmailDialogProps) {
   const settingsContext = useContext(SettingsContext);
   if (!settingsContext) {
@@ -97,6 +100,9 @@ export function EmailDialog({
           </IconButton>
           <IconButton onClick={() => onNextEmail()}>
             <NavigateNextIcon />
+          </IconButton>
+          <IconButton onClick={() => onGoToEmail(333)}>
+            <MoreHorizIcon />
           </IconButton>
         </Box>
       </DialogTitle>

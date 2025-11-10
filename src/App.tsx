@@ -234,6 +234,7 @@ export function App() {
             onClose={onEmailDialogClose}
             onPrevEmail={onPrevEmail}
             onNextEmail={onNextEmail}
+            onGoToEmail={async (index) => await navigateToIndex(index, true)}
           />
         )}
       </Box>
