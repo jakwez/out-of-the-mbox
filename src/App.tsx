@@ -31,14 +31,17 @@ export function App() {
   const [settings, setSettings] = useState<Settings>({
     contentViewMode: "safe_html",
   });
+
   const [mboxFile, setMBOXFile] = useState<File | null>(null);
-  const [mboxEmails, setMBoxEmails] = useState<Array<Email>>([]);
   const [mboxIndex, setMBoxIndex] = useState<Array<number>>([]);
+
   const [progress, setProgress] = useState(-1);
-  const [numEmails, setNumEmails] = useState(0);
+  const [numEmailsProgress, setNumEmailsProgress] = useState(0);
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [idForEmailDialog, setIdForEmailDialog] = useState(-1);
+  const [emailsOnPage, setEmailsOnPage] = useState<Array<Email>>([]);
+  const [emailIndexOnPageViewed, setEmailIndexOnPageViewed] = useState(-1);
 
   const openMboxFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputElement = event.target as HTMLInputElement;
@@ -53,13 +56,13 @@ export function App() {
     setPage(0);
     setMBOXFile(file);
     setMBoxIndex([]);
-    setMBoxEmails([]);
+    setEmailsOnPage([]);
     await new Promise((r) => setTimeout(r, 0));
 
     const onProgress = throttleOnProgress<OnCreateIndexProgress>(
       (zeroToOneProgress: number, numEmailsReadSoFar: number) => {
         setProgress(zeroToOneProgress);
-        setNumEmails(numEmailsReadSoFar);
+        setNumEmailsProgress(numEmailsReadSoFar);
         return new Promise((r) => setTimeout(r, 0));
       },
       20
@@ -69,7 +72,7 @@ export function App() {
     await new Promise((r) => setTimeout(r, 0));
 
     const emails = await fetchEmailPage(file, index, 0, rowsPerPage);
-    setMBoxEmails(emails);
+    setEmailsOnPage(emails);
   };
 
   const handleChangePage = async (
@@ -82,7 +85,7 @@ export function App() {
       newPage,
       rowsPerPage
     );
-    setMBoxEmails(emails);
+    setEmailsOnPage(emails);
     setPage(newPage);
   };
 
@@ -98,15 +101,33 @@ export function App() {
       0,
       newRowsPerPage
     );
-    setMBoxEmails(emails);
+    setEmailsOnPage(emails);
   };
 
   const onEmailItemClick = (id: number) => {
-    setIdForEmailDialog(id);
+    setEmailIndexOnPageViewed(id);
   };
 
   const onEmailDialogClose = () => {
-    setIdForEmailDialog(-1);
+    setEmailIndexOnPageViewed(-1);
+  };
+
+  const onPrevEmail = () => {
+    console.log("onPrevEmail");
+  };
+
+  // TODO: create a updateFromGlobalEmailIndex
+  const onNextEmail = async () => {
+    const emailIndex = page * rowsPerPage + emailIndexOnPageViewed;
+    if (emailIndex + 1 >= mboxIndex.length) {
+      return;
+    }
+    const nextEmailPage = Math.floor((emailIndex + 1) / rowsPerPage);
+    if (nextEmailPage !== page) {
+      await handleChangePage(null, nextEmailPage);
+    }
+    const nextEmailIndexOnPageView = (emailIndex + 1) % rowsPerPage;
+    setEmailIndexOnPageViewed(nextEmailIndexOnPageView);
   };
 
   const theme = useTheme();
@@ -151,7 +172,7 @@ export function App() {
           >
             {/* <Paper sx={{ width: "30%" }}>Some text</Paper> */}
             <DemoPaper square={true}>
-              <div style={{ paddingBottom: 5 }}>{numEmails} emails</div>
+              <div style={{ paddingBottom: 5 }}>{numEmailsProgress} emails</div>
               <LinearProgress
                 sx={{
                   "& .MuiLinearProgress-bar": {
@@ -186,7 +207,7 @@ export function App() {
                 /*maxWidth: 360,*/ bgcolor: "background.paper",
               }}
             >
-              {mboxEmails.map((email, index) => (
+              {emailsOnPage.map((email, index) => (
                 <EmailListItem
                   key={index.toString()}
                   email={email}
@@ -198,19 +219,20 @@ export function App() {
           </Box>
         )}
 
-        {idForEmailDialog !== -1 && (
+        {emailIndexOnPageViewed !== -1 && (
           <EmailDialog
-            email={mboxEmails[idForEmailDialog]}
+            email={emailsOnPage[emailIndexOnPageViewed]}
             open={true}
             onClose={onEmailDialogClose}
-            onPrevEmail={() => setIdForEmailDialog(idForEmailDialog - 1)} // TO DO!
-            onNextEmail={() => setIdForEmailDialog(idForEmailDialog + 1)} // TO DO!
+            onPrevEmail={onPrevEmail}
+            onNextEmail={onNextEmail}
           />
         )}
       </Box>
     </SettingsContext.Provider>
   );
 }
+
 const DemoPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   paddingTop: 20,
