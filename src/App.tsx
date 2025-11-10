@@ -75,33 +75,32 @@ export function App() {
     setEmailsOnPage(emails);
   };
 
+  // Doesn't affect emailIndexOnPageViewed
+  const fetchEmailsOnPage = async (p: number, rpp: number) => {
+    const emails = await fetchEmailPage(mboxFile!, mboxIndex, p, rpp);
+    setEmailsOnPage(emails);
+    if (p !== page) {
+      setPage(p);
+    }
+    if (rpp !== rowsPerPage) {
+      setRowsPerPage(rpp);
+    }
+  };
+
   const handleChangePage = async (
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
   ) => {
-    const emails = await fetchEmailPage(
-      mboxFile!,
-      mboxIndex,
-      newPage,
-      rowsPerPage
-    );
-    setEmailsOnPage(emails);
-    setPage(newPage);
+    await fetchEmailsOnPage(newPage, rowsPerPage);
+    setEmailIndexOnPageViewed(-1);
   };
 
   const handleChangeRowsPerPage = async (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const newRowsPerPage = parseInt(event.target.value);
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-    const emails = await fetchEmailPage(
-      mboxFile!,
-      mboxIndex,
-      0,
-      newRowsPerPage
-    );
-    setEmailsOnPage(emails);
+    await fetchEmailsOnPage(page, newRowsPerPage);
+    setEmailIndexOnPageViewed(-1);
   };
 
   const onEmailItemClick = (id: number) => {
@@ -112,22 +111,31 @@ export function App() {
     setEmailIndexOnPageViewed(-1);
   };
 
-  const onPrevEmail = () => {
-    console.log("onPrevEmail");
-  };
-
-  // TODO: create a updateFromGlobalEmailIndex
-  const onNextEmail = async () => {
-    const emailIndex = page * rowsPerPage + emailIndexOnPageViewed;
-    if (emailIndex + 1 >= mboxIndex.length) {
+  // index here is not on-page, but global in mboxIndex
+  const navigateToIndex = async (index: number, openDialog: boolean) => {
+    if (index < 0 || index >= mboxIndex.length) {
       return;
     }
-    const nextEmailPage = Math.floor((emailIndex + 1) / rowsPerPage);
-    if (nextEmailPage !== page) {
-      await handleChangePage(null, nextEmailPage);
+    const newPage = Math.floor(index / rowsPerPage);
+    if (newPage !== page) {
+      await fetchEmailsOnPage(newPage, rowsPerPage);
     }
-    const nextEmailIndexOnPageView = (emailIndex + 1) % rowsPerPage;
-    setEmailIndexOnPageViewed(nextEmailIndexOnPageView);
+    if (openDialog) {
+      const newEmailIndexOnPageView = index % rowsPerPage;
+      setEmailIndexOnPageViewed(newEmailIndexOnPageView);
+    } else {
+      setEmailIndexOnPageViewed(-1);
+    }
+  };
+
+  const onPrevEmail = async () => {
+    const newEmailIndex = page * rowsPerPage + emailIndexOnPageViewed - 1;
+    await navigateToIndex(newEmailIndex, true);
+  };
+
+  const onNextEmail = async () => {
+    const newEmailIndex = page * rowsPerPage + emailIndexOnPageViewed + 1;
+    await navigateToIndex(newEmailIndex, true);
   };
 
   const theme = useTheme();
