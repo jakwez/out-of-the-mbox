@@ -26,6 +26,7 @@ import type { Address, Email } from "postal-mime";
 import { useContext } from "react";
 import { SettingsContext, type ContentViewMode } from "../Settings";
 import { InitialsAvatar } from "./InitialsAvatar";
+import { getNiceDateString } from "../models/getNiceDateString";
 
 export type EmailDialogProps = DialogProps & {
   email: Email;
@@ -185,6 +186,7 @@ function renderAddressObject(address: Address | undefined, bold: boolean) {
 
 function renderEmailHeaders(email: Email) {
   const toAddresses = email.to ?? [];
+  const date = getNiceDateString(email.date, false);
   return (
     <Box display="flex" flexDirection={"row"} gap={1}>
       <InitialsAvatar name={email.from?.name} />
@@ -204,10 +206,11 @@ function renderEmailHeaders(email: Email) {
         >
           {renderAddressObject(email.from, true)}
           <Box flexGrow={1} />
-          <Typography>Nov 20, 2025, 3:34 PM</Typography>
+          <Typography>{date}</Typography>
         </Box>
         {toAddresses.map((a, index) => (
           <Box
+            key={index}
             display="flex"
             flexDirection={"row"}
             gap={1}

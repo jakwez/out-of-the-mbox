@@ -8,6 +8,7 @@ import {
 import type { Email } from "postal-mime";
 import { Fragment } from "react/jsx-runtime";
 import { InitialsAvatar } from "./InitialsAvatar";
+import { getNiceDateString } from "../models/getNiceDateString";
 
 export interface EmailListItemProps {
   email: Email;
@@ -20,12 +21,12 @@ export function EmailListItem({
   emailIndex: id,
   onEmailClick: onClick,
 }: EmailListItemProps) {
-  const name = email.from?.name ?? "Unknown sender";
+  const name = email.from?.name ?? "no-sender";
   const textPreview = email.text
     ? " - " + email.text.substring(0, 80 - name.length) + "..."
     : "";
-  const date = new Date(email.date!).toLocaleDateString(undefined, dateOptions);
 
+  const date = getNiceDateString(email.date, true);
   return (
     <Fragment key={id.toString()}>
       <ListItem
@@ -68,10 +69,3 @@ export function EmailListItem({
     </Fragment>
   );
 }
-
-const dateOptions: Intl.DateTimeFormatOptions = {
-  // weekday: "long",
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-};
