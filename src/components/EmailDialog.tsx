@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Dialog,
@@ -6,6 +7,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   IconButton,
   ToggleButton,
   ToggleButtonGroup,
@@ -20,7 +22,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import DOMPurify from "dompurify";
-import type { Email } from "postal-mime";
+import type { Address, Email } from "postal-mime";
 import { useContext } from "react";
 import { SettingsContext, type ContentViewMode } from "../Settings";
 import { InitialsAvatar } from "./InitialsAvatar";
@@ -73,7 +75,13 @@ export function EmailDialog({
     >
       <DialogTitle>
         <Box display="flex" alignItems="center">
-          <Typography variant="h6" flexGrow="1">
+          <Typography
+            variant="h6"
+            flexGrow="1"
+            overflow={"hidden"}
+            whiteSpace={"nowrap"}
+            textOverflow={"ellipsis"}
+          >
             {email.subject!}
           </Typography>
           <ToggleButtonGroup
@@ -82,15 +90,38 @@ export function EmailDialog({
             onChange={handleContentViewModeChange}
             aria-label="text alignment"
           >
-            <ToggleButton value={"raw_text" satisfies ContentViewMode}>
-              <RawOnSharpIcon />
-            </ToggleButton>
-            <ToggleButton value={"safe_html" satisfies ContentViewMode}>
-              <HtmlSharpIcon />
-            </ToggleButton>
-            <ToggleButton value={"full_html" satisfies ContentViewMode}>
-              <JavascriptSharpIcon />
-            </ToggleButton>
+            <Badge
+              color="success"
+              variant="dot"
+              overlap="circular"
+              invisible={!email.text}
+            >
+              <ToggleButton value={"raw_text" satisfies ContentViewMode}>
+                <RawOnSharpIcon />
+              </ToggleButton>
+            </Badge>
+
+            <Badge
+              color="success"
+              variant="dot"
+              overlap="circular"
+              invisible={!email.html}
+            >
+              <ToggleButton value={"safe_html" satisfies ContentViewMode}>
+                <HtmlSharpIcon />
+              </ToggleButton>
+            </Badge>
+
+            <Badge
+              color="success"
+              variant="dot"
+              overlap="circular"
+              invisible={!email.html}
+            >
+              <ToggleButton value={"full_html" satisfies ContentViewMode}>
+                <JavascriptSharpIcon />
+              </ToggleButton>
+            </Badge>
           </ToggleButtonGroup>
 
           <Box sx={{ width: 16 }} />
@@ -109,14 +140,13 @@ export function EmailDialog({
       <DialogContent
         sx={{
           minHeight: 300,
-          // backgroundColor: "green",
           display: "flex",
           flexDirection: "column",
-          // alignItems: "flex-start",
           justifyContent: "flex-start",
         }}
       >
         {renderEmailHeaders(email)}
+        <Divider sx={{ marginTop: 1, marginBottom: 2 }} />
         {renderEmailContent(email, contentViewMode)}
       </DialogContent>
       <DialogActions>
@@ -126,22 +156,67 @@ export function EmailDialog({
   );
 }
 
-function renderEmailHeaders(email: Email) {
-  const fromName = email.from?.name ?? "<no name>";
-  const fromAddress = email.from?.address ?? "<no address>";
-  const toAddresses = email.to ?? [];
+// function renderNameAndAddress(n: string, a: string, boldName: boolean) {
+//   return (
+//     <>
+//       <Typography sx={boldName ? { fontWeight: "bold" } : {}}>{n}</Typography>
+//       <Typography>{`<${a}>`}</Typography>
+//     </>
+//   );
+// }
 
+// function renderNoNameAndAddress(a: string, bold: boolean) {
+//   return <Typography sx={bold ? { fontWeight: "bold" } : {}}>{a}</Typography>;
+// }
+
+function renderAddressObject(address: Address | undefined, bold: boolean) {
+  let n = !address || address.name === "" ? "no-name" : address.name;
+  const a =
+    !address || !address.address || address.address === ""
+      ? "no-address"
+      : address.address;
   return (
-    <Box bgcolor={"pink"}>
+    <>
+      <Typography sx={bold ? { fontWeight: "bold" } : {}}>{n}</Typography>
+      <Typography variant="subtitle2">{`<${a}>`}</Typography>
+    </>
+  );
+}
+
+function renderEmailHeaders(email: Email) {
+  const toAddresses = email.to ?? [];
+  return (
+    <Box display="flex" flexDirection={"row"} gap={1}>
       <InitialsAvatar name={email.from?.name} />
-      <Typography>
-        fromName: {fromName} fromAddress:{fromAddress}
-      </Typography>
-      {toAddresses.map((toAddress, index) => (
-        <Typography>
-          toName:{toAddress.name} toAddress:{toAddress.address}
-        </Typography>
-      ))}
+      <Box
+        // bgcolor={"grey"}
+        display="flex"
+        flexDirection={"column"}
+        justifyContent={"center"}
+        flexGrow={1}
+      >
+        <Box
+          display="flex"
+          // bgcolor={"pink"}
+          flexDirection={"row"}
+          gap={1}
+          alignItems={"center"}
+        >
+          {renderAddressObject(email.from, true)}
+          <Box flexGrow={1} />
+          <Typography>Nov 20, 2025, 3:34 PM</Typography>
+        </Box>
+        {toAddresses.map((a, index) => (
+          <Box
+            display="flex"
+            flexDirection={"row"}
+            gap={1}
+            alignItems={"center"}
+          >
+            {renderAddressObject(a, false)}
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 }
