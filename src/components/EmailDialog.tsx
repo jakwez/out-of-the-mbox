@@ -2,6 +2,9 @@ import {
   Badge,
   Box,
   Button,
+  Card,
+  CardActionArea,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
@@ -61,6 +64,11 @@ export function EmailDialog({
       });
     }
   };
+
+  const onDownloadAttachmentsClick = () => {
+    alert("download");
+  };
+
   const contentViewMode = settingsContext.settings.contentViewMode;
   const numAttachments = email.attachments.length;
   return (
@@ -149,16 +157,18 @@ export function EmailDialog({
         }}
       >
         {renderEmailHeaders(email)}
-        <Divider sx={{ marginTop: 1, marginBottom: 2 }} />
+        <Divider sx={{ marginTop: 1, marginBottom: 1 }} />
         {email.attachments.length > 0 && (
           <>
             <Typography sx={{ fontWeight: "bold" }}>
               {numAttachments} attachment{numAttachments > 1 ? "s" : ""}
               {" • "}
-              <FileDownloadOutlinedIcon sx={{ verticalAlign: "middle" }} />
+              <IconButton onClick={onDownloadAttachmentsClick}>
+                <FileDownloadOutlinedIcon sx={{ verticalAlign: "middle" }} />
+              </IconButton>
             </Typography>
             {renderEmailAttachments(email.attachments)}
-            <Divider sx={{ marginTop: 1, marginBottom: 2 }} />
+            <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
           </>
         )}
         {renderEmailContent(email, contentViewMode)}
@@ -238,10 +248,35 @@ function renderEmailHeaders(email: Email) {
 }
 
 function renderEmailAttachments(attachments: Attachment[]) {
+  const onClick = () => {
+    alert("click");
+  };
+  const s = 100;
   return (
-    <>
-      <Typography>...</Typography>
-    </>
+    <Box display="flex" flexDirection={"row"} gap={1} bgcolor={""}>
+      {attachments.map((attachment, index) => (
+        <Card sx={{ width: s, height: s }}>
+          <CardActionArea
+            onClick={onClick}
+            // data-active={selectedCard === index ? "" : undefined}
+            sx={{
+              height: s,
+              "&:hover": {
+                backgroundColor: "action.hover", // uses MUI theme value
+                cursor: "pointer",
+              },
+            }}
+          >
+            <CardContent sx={{ height: s }}>
+              <Typography variant="body1">{attachment.filename}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {attachment.mimeType}
+              </Typography>
+            </CardContent>
+          </CardActionArea>
+        </Card>
+      ))}
+    </Box>
   );
 }
 
