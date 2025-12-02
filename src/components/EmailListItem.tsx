@@ -9,6 +9,7 @@ import type { Email } from "postal-mime";
 import { Fragment } from "react/jsx-runtime";
 import { InitialsAvatar } from "./InitialsAvatar";
 import { getNiceDateString } from "../models/getNiceDateString";
+import AttachmentOutlinedIcon from "@mui/icons-material/AttachmentOutlined";
 
 export interface EmailListItemProps {
   email: Email;
@@ -59,8 +60,22 @@ export function EmailListItem({
           }
         />
         <ListItemText
-          secondary={date}
+          secondary={
+            <>
+              {email.attachments.length > 0 && (
+                <AttachmentOutlinedIcon
+                  sx={{
+                    // bgcolor: "red",
+                    marginBottom: "-6px", // Gross, probably need to rework all this as a table
+                    marginRight: 1,
+                  }}
+                />
+              )}
+              {date}
+            </>
+          }
           sx={{
+            // bgcolor: "green",
             textAlign: "right",
           }}
         ></ListItemText>
