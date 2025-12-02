@@ -5,7 +5,6 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  CardMedia,
   Dialog,
   DialogActions,
   DialogContent,
@@ -25,6 +24,7 @@ import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
+// import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 
 import DOMPurify from "dompurify";
 import type { Address, Attachment, Email } from "postal-mime";
@@ -32,6 +32,9 @@ import { useContext } from "react";
 import { SettingsContext, type ContentViewMode } from "../Settings";
 import { InitialsAvatar } from "./InitialsAvatar";
 import { getNiceDateString } from "../models/getNiceDateString";
+
+import JSZip from "jszip";
+import { getFileExtensionFromMimeType } from "../models/getFileExtensionFromMimeType";
 
 export type EmailDialogProps = DialogProps & {
   email: Email;
@@ -66,18 +69,8 @@ export function EmailDialog({
     }
   };
 
-  const onDownloadAttachmentsClick = () => {
-    alert("download");
-    const firstAtt = email.attachments[0];
-    if (firstAtt.content instanceof ArrayBuffer) {
-      downloadArrayBuffer(
-        firstAtt.content,
-        firstAtt.filename ?? "unnamed file",
-        firstAtt.mimeType
-      );
-    } else {
-      //...
-    }
+  const onDownloadAttachmentsClick = async () => {
+    await downloadAttachmentsAsZip(email.attachments, "attachments.zip");
   };
 
   const contentViewMode = settingsContext.settings.contentViewMode;
@@ -154,7 +147,7 @@ export function EmailDialog({
           <IconButton onClick={() => onNextEmail()}>
             <NavigateNextIcon />
           </IconButton>
-          <IconButton onClick={() => onGoToEmail(333)}>
+          <IconButton onClick={() => onGoToEmail(407)}>
             <MoreHorizIcon />
           </IconButton>
         </Box>
@@ -259,19 +252,24 @@ function renderEmailHeaders(email: Email) {
 }
 
 function renderEmailAttachments(attachments: Attachment[]) {
-  const onClick = () => {
-    alert("click");
-  };
-  const s = 100;
+  const w = 150;
+  const h = 100;
   return (
     <Box display="flex" flexDirection={"row"} gap={1} bgcolor={""}>
       {attachments.map((attachment, index) => (
-        <Card sx={{ width: s, height: s }}>
+        <Card sx={{ width: w, height: h }}>
           <CardActionArea
-            onClick={onClick}
+            onClick={() => {
+              const filename = createFilenameForAttachment(attachment, index);
+              downloadContent(
+                attachment.content,
+                filename,
+                attachment.mimeType
+              );
+            }}
             // data-active={selectedCard === index ? "" : undefined}
             sx={{
-              height: s,
+              height: h,
               "&:hover": {
                 backgroundColor: "action.hover", // uses MUI theme value
                 cursor: "pointer",
@@ -284,10 +282,15 @@ function renderEmailAttachments(attachments: Attachment[]) {
               height="140"
               image={attachment.content}
             /> */}
-            <CardContent sx={{ height: s }}>
-              <Typography variant="body1">{attachment.filename}</Typography>
+            <CardContent sx={{ height: h }}>
+              <Typography variant="body2">
+                {getFileExtensionFromMimeType(attachment.mimeType)}
+              </Typography>
               <Typography variant="body2" color="text.secondary">
-                {attachment.mimeType}
+                {attachment.filename ??
+                  `unnamed.${getFileExtensionFromMimeType(
+                    attachment.mimeType
+                  )}`}
               </Typography>
             </CardContent>
           </CardActionArea>
@@ -350,16 +353,44 @@ function sanitizeHtml(html: string) {
   });
 }
 
-function downloadArrayBuffer(
-  arrayBuffer: ArrayBuffer,
+function downloadContent(
+  content: ArrayBuffer | string | Blob,
   filename: string,
   mimeType: string //= "application/octet-stream"
 ) {
-  const blob = new Blob([arrayBuffer], { type: mimeType });
+  let blob: Blob;
+  if (content instanceof Blob) {
+    blob = content;
+  } else {
+    blob = new Blob([content], { type: mimeType });
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function downloadAttachmentsAsZip(
+  attachments: Attachment[],
+  zipName: string
+) {
+  const zip = new JSZip();
+  for (let i = 0; i < attachments.length; i++) {
+    const attachment = attachments[i];
+    const filename = createFilenameForAttachment(attachment, i);
+    zip.file(filename, attachment.content);
+  }
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  downloadContent(zipBlob, zipName, "application/zip");
+}
+
+function createFilenameForAttachment(attachment: Attachment, index: number) {
+  const filename =
+    attachment.filename ??
+    `unnamed_${index}` +
+      "." +
+      getFileExtensionFromMimeType(attachment.mimeType);
+  return filename;
 }

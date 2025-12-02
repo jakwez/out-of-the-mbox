@@ -1,4 +1,5 @@
 import {
+  Badge,
   Divider,
   ListItem,
   ListItemAvatar,
@@ -27,6 +28,7 @@ export function EmailListItem({
     ? " - " + email.text.substring(0, 80 - name.length) + "..."
     : "";
 
+  const numAttachments = email.attachments.length;
   const date = getNiceDateString(email.date, true);
   return (
     <Fragment key={id.toString()}>
@@ -62,10 +64,21 @@ export function EmailListItem({
         <ListItemText
           secondary={
             <>
-              {email.attachments.length > 0 && (
-                <AttachmentOutlinedIcon
-                  sx={{ verticalAlign: "middle", marginRight: 1 }}
-                />
+              {numAttachments > 0 && (
+                <Badge
+                  invisible={numAttachments == 1}
+                  badgeContent={numAttachments}
+                  max={9}
+                  color="primary"
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "left",
+                  }}
+                >
+                  <AttachmentOutlinedIcon
+                    sx={{ verticalAlign: "middle", marginRight: 1 }}
+                  />
+                </Badge>
               )}
               {date}
             </>
