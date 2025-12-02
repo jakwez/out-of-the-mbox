@@ -1,5 +1,5 @@
 export function getFileExtensionFromMimeType(mimeType: string) {
-  const extension = mimeMap[mimeType as keyof typeof mimeMap];
+  const extension = mimeExtensions[mimeType as keyof typeof mimeExtensions];
   if (extension) {
     return extension;
   }
@@ -14,8 +14,14 @@ export function getFileExtensionFromMimeType(mimeType: string) {
   return "bin";
 }
 
-const mimeMap = {
-  // Images
+export function isMimeImage(mimeType: string) {
+  return (
+    mimeImageExtensions[mimeType as keyof typeof mimeImageExtensions] !==
+    undefined
+  );
+}
+
+const mimeImageExtensions = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/gif": "gif",
@@ -24,6 +30,11 @@ const mimeMap = {
   "image/bmp": "bmp",
   "image/tiff": "tiff",
   "image/x-icon": "ico",
+};
+
+const mimeExtensions = {
+  // Images
+  ...mimeImageExtensions,
 
   // Documents
   "application/pdf": "pdf",
