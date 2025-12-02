@@ -5,6 +5,7 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  CardMedia,
   Dialog,
   DialogActions,
   DialogContent,
@@ -67,6 +68,16 @@ export function EmailDialog({
 
   const onDownloadAttachmentsClick = () => {
     alert("download");
+    const firstAtt = email.attachments[0];
+    if (firstAtt.content instanceof ArrayBuffer) {
+      downloadArrayBuffer(
+        firstAtt.content,
+        firstAtt.filename ?? "unnamed file",
+        firstAtt.mimeType
+      );
+    } else {
+      //...
+    }
   };
 
   const contentViewMode = settingsContext.settings.contentViewMode;
@@ -158,7 +169,7 @@ export function EmailDialog({
       >
         {renderEmailHeaders(email)}
         <Divider sx={{ marginTop: 1, marginBottom: 1 }} />
-        {email.attachments.length > 0 && (
+        {numAttachments > 0 && (
           <>
             <Typography sx={{ fontWeight: "bold" }}>
               {numAttachments} attachment{numAttachments > 1 ? "s" : ""}
@@ -267,6 +278,12 @@ function renderEmailAttachments(attachments: Attachment[]) {
               },
             }}
           >
+            {/* <CardMedia
+              component="img"
+              alt="green iguana"
+              height="140"
+              image={attachment.content}
+            /> */}
             <CardContent sx={{ height: s }}>
               <Typography variant="body1">{attachment.filename}</Typography>
               <Typography variant="body2" color="text.secondary">
@@ -331,4 +348,18 @@ function sanitizeHtml(html: string) {
     FORBID_ATTR: ["srcset", "xlink:href", "formaction"],
     ALLOWED_URI_REGEXP: /^data:/, // only allow inline data URIs
   });
+}
+
+function downloadArrayBuffer(
+  arrayBuffer: ArrayBuffer,
+  filename: string,
+  mimeType: string //= "application/octet-stream"
+) {
+  const blob = new Blob([arrayBuffer], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
