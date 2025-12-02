@@ -20,6 +20,7 @@ import JavascriptSharpIcon from "@mui/icons-material/JavascriptSharp";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 
 import DOMPurify from "dompurify";
 import type { Address, Attachment, Email } from "postal-mime";
@@ -61,6 +62,7 @@ export function EmailDialog({
     }
   };
   const contentViewMode = settingsContext.settings.contentViewMode;
+  const numAttachments = email.attachments.length;
   return (
     <Dialog
       open={open}
@@ -150,6 +152,11 @@ export function EmailDialog({
         <Divider sx={{ marginTop: 1, marginBottom: 2 }} />
         {email.attachments.length > 0 && (
           <>
+            <Typography sx={{ fontWeight: "bold" }}>
+              {numAttachments} attachment{numAttachments > 1 ? "s" : ""}
+              {" • "}
+              <FileDownloadOutlinedIcon sx={{ verticalAlign: "middle" }} />
+            </Typography>
             {renderEmailAttachments(email.attachments)}
             <Divider sx={{ marginTop: 1, marginBottom: 2 }} />
           </>
@@ -233,7 +240,7 @@ function renderEmailHeaders(email: Email) {
 function renderEmailAttachments(attachments: Attachment[]) {
   return (
     <>
-      <Typography>attachments...</Typography>
+      <Typography>...</Typography>
     </>
   );
 }

@@ -64,11 +64,7 @@ export function EmailListItem({
             <>
               {email.attachments.length > 0 && (
                 <AttachmentOutlinedIcon
-                  sx={{
-                    // bgcolor: "red",
-                    marginBottom: "-6px", // Gross, probably need to rework all this as a table
-                    marginRight: 1,
-                  }}
+                  sx={{ verticalAlign: "middle", marginRight: 1 }}
                 />
               )}
               {date}
