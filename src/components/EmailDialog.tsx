@@ -22,7 +22,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import DOMPurify from "dompurify";
-import type { Address, Email } from "postal-mime";
+import type { Address, Attachment, Email } from "postal-mime";
 import { useContext } from "react";
 import { SettingsContext, type ContentViewMode } from "../Settings";
 import { InitialsAvatar } from "./InitialsAvatar";
@@ -148,6 +148,12 @@ export function EmailDialog({
       >
         {renderEmailHeaders(email)}
         <Divider sx={{ marginTop: 1, marginBottom: 2 }} />
+        {email.attachments.length > 0 && (
+          <>
+            {renderEmailAttachments(email.attachments)}
+            <Divider sx={{ marginTop: 1, marginBottom: 2 }} />
+          </>
+        )}
         {renderEmailContent(email, contentViewMode)}
       </DialogContent>
       <DialogActions>
@@ -221,6 +227,14 @@ function renderEmailHeaders(email: Email) {
         ))}
       </Box>
     </Box>
+  );
+}
+
+function renderEmailAttachments(attachments: Attachment[]) {
+  return (
+    <>
+      <Typography>attachments...</Typography>
+    </>
   );
 }
 
